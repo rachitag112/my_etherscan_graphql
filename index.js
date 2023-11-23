@@ -1,29 +1,35 @@
-const { ApolloServer } = require("apollo-server");
-const { importSchema } = require("graphql-import");
-const EtherDataSource = require("./datasource/ethDatasource");
-const typeDefs = importSchema("./schema.graphql");
+const { ApolloServer } = require("apollo-server"); // Import Apollo Server
+const { importSchema } = require("graphql-import"); // Import graphql schema
+const EtherDataSource = require("./datasource/ethDatasource"); // Import custom data source
+const typeDefs = importSchema("./schema.graphql"); // Import GraphQL schema from file
 
-require("dotenv").config();
+require("dotenv").config(); // Load environment variables from .env file
 
 const resolvers = {
   Query: {
-    getEthByAddress: (root, _args, { dataSources }) =>
+    etherBalanceByAddress: (root, _args, { dataSources }) => // Resolver to get ether balance
       dataSources.ethDataSource.etherBalanceByAddress(),
-    getTotalSupplyEth: (root, _args, { dataSources }) =>
+
+    totalSupplyOfEther: (root, _args, { dataSources }) => // Resolver to get total ether supply  
       dataSources.ethDataSource.totalSupplyOfEther(),
-    //Paste Code for New Resolver Functions
+
+    latestEthereumPrice: (root, _args, { dataSources }) => // Resolver to get latest ether price
+      dataSources.ethDataSource.getLatestEthereumPrice(),
+
+    blockConfirmationTime: (root, _args, { dataSources }) => // Resolver to get block confirmation time
+      dataSources.ethDataSource.getBlockConfirmationTime(),
   },
 };
 
-const server = new ApolloServer({
+const server = new ApolloServer({ // Create Apollo Server
   typeDefs,
   resolvers,
   dataSources: () => ({
-    ethDataSource: new EtherDataSource(),
-  }),
+    ethDataSource: new EtherDataSource(), // Instantiate custom data source
+  }), 
 });
 
-server.timeout = 0;
-server.listen("9000").then(({ url }) => {
-  console.log(`🚀 Server ready at ${url}`);
+server.timeout = 0; 
+server.listen("9000").then(({ url }) => { // Start Apollo Server
+  console.log(`🚀 Server ready at ${url}`); 
 });
